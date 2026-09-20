@@ -30,7 +30,26 @@ Models are downloaded on first use. Use `--model-dir` to choose the cache locati
 
 ### Windows — one-click launcher (easiest)
 
-Download [`IOPaint-OneClick.bat`](https://github.com/daraskme/IOpaint/raw/modernize-2026/IOPaint-OneClick.bat) and double-click it. On first run it installs uv, creates a Python environment under `%LOCALAPPDATA%\IOPaint`, detects your NVIDIA GPU (CUDA 12.8 vs CPU PyTorch), and installs the latest release wheel from GitHub. Subsequent runs start IOPaint immediately and open the browser. Uninstall by deleting `%LOCALAPPDATA%\IOPaint`.
+Download `IOPaint-OneClick.bat` from the [latest release](https://github.com/daraskme/IOpaint/releases/latest) and double-click it. On first run it installs uv, creates a Python environment under `%LOCALAPPDATA%\IOPaint`, detects your NVIDIA GPU (CUDA 12.8 vs CPU PyTorch), and installs the latest release wheel from GitHub. Subsequent runs start IOPaint immediately and open the browser. Everything, including the uv cache and downloaded model weights, lives under `%LOCALAPPDATA%\IOPaint`, so uninstalling is just deleting that folder.
+
+To change where things are stored (for example to keep multi-GB model weights on another drive), edit the `IOPaint-OneClick.cfg` file that the launcher writes next to itself on first run, or set the same names as environment variables:
+
+```ini
+# IOPaint-OneClick.cfg: one KEY=VALUE per line, no quotes, lines starting with "#" are ignored
+# install root (Python env, uv cache, models by default)
+IOPAINT_HOME=D:\IOPaint
+# model downloads (passed to iopaint as --model-dir; HF and torch hub caches live inside)
+IOPAINT_MODEL_DIR=D:\IOPaint\models
+# model to start with, HTTP port, extra arguments appended to `iopaint start`
+IOPAINT_MODEL=lama
+IOPAINT_PORT=8080
+IOPAINT_EXTRA_ARGS=--low-mem
+# uv download cache and uv-managed Python (default: under IOPAINT_HOME)
+UV_CACHE_DIR=D:\IOPaint\uv-cache
+UV_PYTHON_INSTALL_DIR=D:\IOPaint\python
+```
+
+Moving `IOPAINT_MODEL_DIR` after models were downloaded? Move the folder and update the setting; nothing else references the old path. Launchers older than v2.0.0rc3 stored models in `%USERPROFILE%\.cache`; the current launcher keeps using that folder when it exists so nothing is downloaded twice.
 
 ### uv — recommended
 
