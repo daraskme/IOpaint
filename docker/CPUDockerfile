@@ -20,15 +20,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxrender1 \
     && rm -rf /var/lib/apt/lists/*
 
+# PyTorch is by far the largest layer; install it before copying sources so
+# that source-only changes do not invalidate it.
+RUN python -m pip install --no-cache-dir --upgrade pip \
+    && python -m pip install --no-cache-dir torch torchvision \
+      --index-url https://download.pytorch.org/whl/cpu
+
 WORKDIR /opt/iopaint
 COPY . .
 RUN rm -rf iopaint/web_app && mkdir -p iopaint/web_app
 COPY --from=web-builder /src/web_app/dist/ ./iopaint/web_app/
 
-RUN python -m pip install --no-cache-dir --upgrade pip \
-    && python -m pip install --no-cache-dir torch torchvision \
-      --index-url https://download.pytorch.org/whl/cpu \
-    && python -m pip install --no-cache-dir .
+RUN python -m pip install --no-cache-dir .
 
 EXPOSE 8080
 

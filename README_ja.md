@@ -28,11 +28,30 @@
 
 ### Windows — ワンクリック起動（いちばん簡単）
 
-[`IOPaint-OneClick.bat`](https://github.com/daraskme/IOpaint/raw/modernize-2026/IOPaint-OneClick.bat) をダウンロードしてダブルクリックするだけです。
+[最新リリース](https://github.com/daraskme/IOpaint/releases/latest) から `IOPaint-OneClick.bat` をダウンロードしてダブルクリックするだけです。
 
 - 初回実行時に自動で環境構築します：uv の導入 → Python 環境作成 → GPU の有無を判定して CUDA 12.8 版 / CPU 版 PyTorch をインストール → GitHub の最新リリースから IOPaint 本体をインストール
 - 2回目以降はそのまま即起動し、ブラウザが自動で開きます
-- インストール先は `%LOCALAPPDATA%\IOPaint` です（アンインストールはこのフォルダを削除するだけ）
+- インストール先は `%LOCALAPPDATA%\IOPaint` です。uv のキャッシュやダウンロードしたモデルの重みもすべてこの中に置かれるので、アンインストールはこのフォルダを削除するだけです
+
+保存先を変えたい場合（数GBあるモデルを別ドライブに置きたい等）は、初回実行時に .bat の隣に生成される `IOPaint-OneClick.cfg` を編集するか、同名の環境変数を設定します:
+
+```ini
+# IOPaint-OneClick.cfg: 1行に KEY=VALUE、引用符なし、"#" で始まる行はコメント
+# インストール先（Python 環境・uv キャッシュ・既定ではモデルも）
+IOPAINT_HOME=D:\IOPaint
+# モデルの保存先（iopaint に --model-dir として渡されます。HF / torch hub のキャッシュもこの中）
+IOPAINT_MODEL_DIR=D:\IOPaint\models
+# 起動するモデル、ポート、`iopaint start` に追加する引数
+IOPAINT_MODEL=lama
+IOPAINT_PORT=8080
+IOPAINT_EXTRA_ARGS=--low-mem
+# uv のダウンロードキャッシュと uv 管理の Python（既定は IOPAINT_HOME 配下）
+UV_CACHE_DIR=D:\IOPaint\uv-cache
+UV_PYTHON_INSTALL_DIR=D:\IOPaint\python
+```
+
+v2.0.0rc3 より前のランチャーはモデルを `%USERPROFILE%\.cache` に保存していました。そのフォルダが存在する場合、新しいランチャーは再ダウンロードを避けるためそのまま使い続けます。別の場所へ移したい場合はフォルダを移動して `IOPAINT_MODEL_DIR` を設定してください。
 
 ### uv — 推奨（macOS / Linux / Windows）
 
