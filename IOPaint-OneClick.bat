@@ -149,8 +149,11 @@ REM PyTorch needs the Visual C++ runtime; without it "import torch" fails
 REM with WinError 1114/126 on a fresh Windows install.
 if exist "%SystemRoot%\System32\vcruntime140_1.dll" exit /b 0
 echo Installing Microsoft Visual C++ Redistributable, required by PyTorch...
-powershell -NoProfile -Command "Invoke-WebRequest https://aka.ms/vs/17/release/vc_redist.x64.exe -OutFile $env:TEMP\vc_redist.x64.exe"
+powershell -NoProfile -Command "$ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest https://aka.ms/vs/17/release/vc_redist.x64.exe -OutFile $env:TEMP\vc_redist.x64.exe"
 "%TEMP%\vc_redist.x64.exe" /install /passive /norestart
+REM 3010 = installed, reboot required.
+if errorlevel 3010 if not errorlevel 3011 exit /b 0
+if errorlevel 1 echo WARNING: Visual C++ Redistributable install returned !errorlevel!.
 exit /b 0
 
 :write_cfg_template
