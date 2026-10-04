@@ -8,7 +8,7 @@ if not exist ".iopaint-env\Scripts\activate.bat" (
 )
 
 set "IOPAINT_DEVICE=cpu"
-where nvidia-smi >nul 2>&1
+.iopaint-env\Scripts\python.exe -c "import sys, torch; sys.exit(0 if torch.cuda.is_available() else 1)" >nul 2>&1
 if not errorlevel 1 set "IOPAINT_DEVICE=cuda"
 
 call .iopaint-env\Scripts\activate.bat

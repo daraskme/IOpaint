@@ -28,7 +28,7 @@ _CANDIDATES = [
     "transformers",
     "opencv-python",
     "accelerate",
-    "iopaint",
+    "iopaint-ng",
     "rembg",
     "onnxruntime",
 ]
