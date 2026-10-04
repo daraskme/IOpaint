@@ -158,7 +158,9 @@ if "!VCRC!"=="3010" exit /b 0
 REM 1602 = cancelled by user, 1223 = UAC prompt declined.
 if "!VCRC!"=="1602" echo WARNING: Visual C++ Redistributable install was cancelled.
 if "!VCRC!"=="1223" echo WARNING: Visual C++ Redistributable install was cancelled.
-if not "!VCRC!"=="0" if not "!VCRC!"=="1602" if not "!VCRC!"=="1223" echo WARNING: Visual C++ Redistributable install returned !VCRC!.
+REM 1058 = could not elevate (UAC disabled or no admin rights).
+if "!VCRC!"=="1058" echo WARNING: Visual C++ Redistributable needs administrator rights; run this as administrator or install it manually.
+if not "!VCRC!"=="0" if not "!VCRC!"=="1602" if not "!VCRC!"=="1223" if not "!VCRC!"=="1058" echo WARNING: Visual C++ Redistributable install returned !VCRC!.
 exit /b 0
 
 :write_cfg_template
