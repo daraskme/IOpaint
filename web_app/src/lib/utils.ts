@@ -122,7 +122,7 @@ export async function askWritePermission() {
   }
 }
 
-function canvasToBlob(canvas: HTMLCanvasElement, mime: string): Promise<any> {
+function canvasToBlob(canvas: HTMLCanvasElement, mime: string): Promise<Blob> {
   return new Promise((resolve, reject) =>
     canvas.toBlob(async (d) => {
       if (d) {
@@ -134,9 +134,13 @@ function canvasToBlob(canvas: HTMLCanvasElement, mime: string): Promise<any> {
   )
 }
 
-const setToClipboard = async (blob: any) => {
+const setToClipboard = async (blob: Blob) => {
   const data = [new ClipboardItem({ [blob.type]: blob })]
   await navigator.clipboard.write(data)
+}
+
+export function errorMessage(e: unknown): string {
+  return e instanceof Error && e.message ? e.message : String(e)
 }
 
 export function isRightClick(ev: SyntheticEvent) {

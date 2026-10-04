@@ -409,14 +409,34 @@ def test_darask_plugin_mode_strips_preexisting_docs_routes_defensively():
 # ---------------------------------------------------------------------------
 
 
-def test_darask_plugin_mode_no_cors_headers_with_loopback_origin():
+def test_darask_plugin_mode_no_cors_headers_without_origin():
     config = _base_config(darask_plugin_mode=True)
     client, _api = _make_client(config)
 
-    resp = client.get("/api/v1/health", headers={"Origin": "http://localhost:12345"})
+    resp = client.get("/api/v1/health")
 
     assert resp.status_code == 200
     assert "access-control-allow-origin" not in {k.lower() for k in resp.headers.keys()}
+
+
+@pytest.mark.parametrize(
+    "origin",
+    [
+        "http://localhost:12345",
+        "http://127.0.0.1:5173",
+        "http://[::1]:3000",
+        "tauri://localhost",
+        "null",
+    ],
+)
+def test_darask_plugin_mode_rejects_local_browser_origin(origin):
+    config = _base_config(darask_plugin_mode=True)
+    client, _api = _make_client(config)
+
+    resp = client.post("/api/v1/inpaint", headers={"Origin": origin}, content=b"{}")
+
+    assert resp.status_code == 403
+    assert resp.json()["error"] == "Forbidden"
 
 
 def test_darask_plugin_mode_rejects_cross_origin_request():

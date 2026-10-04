@@ -53,28 +53,28 @@ function Home() {
 
   const dragCounter = useRef(0)
 
-  const handleDrag = useCallback((event: any) => {
+  const handleDrag = useCallback((event: DragEvent) => {
     event.preventDefault()
     event.stopPropagation()
   }, [])
 
-  const handleDragIn = useCallback((event: any) => {
+  const handleDragIn = useCallback((event: DragEvent) => {
     event.preventDefault()
     event.stopPropagation()
     dragCounter.current += 1
   }, [])
 
-  const handleDragOut = useCallback((event: any) => {
+  const handleDragOut = useCallback((event: DragEvent) => {
     event.preventDefault()
     event.stopPropagation()
     dragCounter.current -= 1
     if (dragCounter.current > 0) return
   }, [])
 
-  const handleDrop = useCallback((event: any) => {
+  const handleDrop = useCallback((event: DragEvent) => {
     event.preventDefault()
     event.stopPropagation()
-    if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+    if (event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files.length > 0) {
       if (event.dataTransfer.files.length > 1) {
         // setToastState({
         //   open: true,
@@ -100,7 +100,7 @@ function Home() {
     }
   }, [])
 
-  const onPaste = useCallback((event: any) => {
+  const onPaste = useCallback((event: ClipboardEvent) => {
     // TODO: when sd side panel open, ctrl+v not work
     // https://htmldom.dev/paste-an-image-from-the-clipboard/
     if (!event.clipboardData) {

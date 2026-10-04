@@ -18,7 +18,7 @@ const api = axios.create({
   baseURL: API_ENDPOINT,
 })
 
-const throwErrors = async (res: any): Promise<never> => {
+const throwErrors = async (res: Response): Promise<never> => {
   const errMsg = await res.json()
   throw new Error(
     `${errMsg.errors}\nPlease take a screenshot of the detailed error message in your terminal`

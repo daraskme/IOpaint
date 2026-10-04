@@ -150,10 +150,17 @@ REM with WinError 1114/126 on a fresh Windows install.
 if exist "%SystemRoot%\System32\vcruntime140_1.dll" exit /b 0
 echo Installing Microsoft Visual C++ Redistributable, required by PyTorch...
 powershell -NoProfile -Command "$ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest https://aka.ms/vs/17/release/vc_redist.x64.exe -OutFile $env:TEMP\vc_redist.x64.exe"
+echo Windows may ask for administrator permission (UAC); choose Yes to continue.
 "%TEMP%\vc_redist.x64.exe" /install /passive /norestart
+set "VCRC=!errorlevel!"
 REM 3010 = installed, reboot required.
-if errorlevel 3010 if not errorlevel 3011 exit /b 0
-if errorlevel 1 echo WARNING: Visual C++ Redistributable install returned !errorlevel!.
+if "!VCRC!"=="3010" exit /b 0
+REM 1602 = cancelled by user, 1223 = UAC prompt declined.
+if "!VCRC!"=="1602" echo WARNING: Visual C++ Redistributable install was cancelled.
+if "!VCRC!"=="1223" echo WARNING: Visual C++ Redistributable install was cancelled.
+REM 1058 = could not elevate (UAC disabled or no admin rights).
+if "!VCRC!"=="1058" echo WARNING: Visual C++ Redistributable needs administrator rights; run this as administrator or install it manually.
+if not "!VCRC!"=="0" if not "!VCRC!"=="1602" if not "!VCRC!"=="1223" if not "!VCRC!"=="1058" echo WARNING: Visual C++ Redistributable install returned !VCRC!.
 exit /b 0
 
 :write_cfg_template

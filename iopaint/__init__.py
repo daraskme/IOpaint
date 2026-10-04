@@ -5,7 +5,7 @@ import os
 import shutil
 import warnings
 
-__version__ = "2.0.0rc4"
+__version__ = "2.0.0rc5"
 
 os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 # https://github.com/pytorch/pytorch/issues/27971#issuecomment-1768868068

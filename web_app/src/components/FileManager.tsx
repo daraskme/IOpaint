@@ -1,3 +1,4 @@
+import { errorMessage } from "@/lib/utils"
 import {
   SyntheticEvent,
   useEffect,
@@ -138,11 +139,11 @@ export default function FileManager(props: Props) {
       try {
         const filenames = await getMedias(tab)
         setFilenames(filenames)
-      } catch (e: any) {
+      } catch (e) {
         toast({
           variant: "destructive",
           title: "Uh oh! Something went wrong.",
-          description: e.message ? e.message : e.toString(),
+          description: errorMessage(e),
         })
       }
     }
@@ -181,11 +182,11 @@ export default function FileManager(props: Props) {
           return { src, height, width, name: filename.name }
         })
         setPhotos(newPhotos)
-      } catch (e: any) {
+      } catch (e) {
         toast({
           variant: "destructive",
           title: "Uh oh! Something went wrong.",
-          description: e.message ? e.message : e.toString(),
+          description: errorMessage(e),
         })
       }
     }
