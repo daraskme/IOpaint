@@ -78,7 +78,7 @@ if errorlevel 1 (
 
 echo [2/4] Creating Python environment...
 if not exist "%APPDIR%" mkdir "%APPDIR%"
-uv venv "%VENV%" --python 3.12
+uv venv "%VENV%" --python 3.12 --clear
 if errorlevel 1 goto :fail
 
 where nvidia-smi >nul 2>nul
@@ -114,7 +114,9 @@ echo.
 
 :run
 if not exist "%IOPAINT_MODEL_DIR%" mkdir "%IOPAINT_MODEL_DIR%"
-where nvidia-smi >nul 2>nul
+REM Pick the device from the installed PyTorch build, not from nvidia-smi:
+REM a CPU-only torch on a machine with an NVIDIA GPU must still start on CPU.
+"%VENV%\Scripts\python.exe" -c "import sys, torch; sys.exit(0 if torch.cuda.is_available() else 1)" >nul 2>nul
 if errorlevel 1 (set "DEVICE=cpu") else (set "DEVICE=cuda")
 echo Starting IOPaint (model: %IOPAINT_MODEL%, device: !DEVICE!, models in: %IOPAINT_MODEL_DIR%)
 echo The browser will open automatically. Close this window to stop IOPaint.

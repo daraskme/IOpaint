@@ -8,4 +8,8 @@ def install(package):
 
 def install_plugins_package():
     install("onnxruntime>=1.20")
-    install("rembg[cpu]>=2.0.78")
+    if sys.version_info >= (3, 11):
+        install("rembg[cpu]>=2.0.78")
+    else:
+        # rembg >=2.0.70 requires Python >=3.11.
+        install("rembg[cpu]==2.0.69")

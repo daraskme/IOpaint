@@ -21,7 +21,7 @@ if errorlevel 1 (
 )
 
 echo Creating .iopaint-env...
-uv venv .iopaint-env
+uv venv .iopaint-env --clear
 if errorlevel 1 exit /b 1
 set "IOPAINT_PYTHON=.iopaint-env\Scripts\python.exe"
 

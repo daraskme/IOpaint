@@ -25,6 +25,16 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Check tag matches iopaint.__version__
+        run: |
+          version=$(sed -n 's/^__version__ = "\(.*\)"$/\1/p' iopaint/__init__.py)
+          # Tags use "v2.0.0-rc3" while __version__ is PEP 440 "2.0.0rc3".
+          tag_version=$(echo "${GITHUB_REF_NAME#v}" | sed -E 's/-(rc|a|b|alpha|beta)/\1/')
+          if [ -z "${version}" ] || [ "${tag_version}" != "${version}" ]; then
+            echo "::error::tag ${GITHUB_REF_NAME} does not match iopaint.__version__ ${version}"
+            exit 1
+          fi
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
