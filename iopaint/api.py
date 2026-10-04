@@ -6,7 +6,6 @@ import traceback
 from contextlib import nullcontext
 from pathlib import Path
 from typing import Optional, Dict, List
-from urllib.parse import urlparse
 
 import cv2
 import numpy as np
@@ -83,7 +82,7 @@ DARASK_PLUGIN_MODE_BLOCKED_PATHS = {
 }
 
 # darask-paint only ever talks to 127.0.0.1; anything else in the Host
-# header (DNS rebinding) or a cross-origin Origin header is refused outright.
+# header (DNS rebinding) or any Origin header (a browser page) is refused outright.
 DARASK_PLUGIN_MODE_LOOPBACK_HOSTNAMES = {"127.0.0.1", "localhost"}
 
 
@@ -280,9 +279,9 @@ class Api:
         itself: a non-loopback Host header (DNS rebinding: a public DNS name
         that resolves to 127.0.0.1, used to bypass same-origin protections a
         browser would otherwise apply) or a cross-origin Origin header (a
-        browser tab on some other site trying to reach this local server).
-        darask-paint's own HTTP client never sends an Origin header at all,
-        so this only ever blocks browser-style requests.
+        browser tab, including another app on localhost, trying to reach this
+        local server). darask-paint's own HTTP client never sends an Origin
+        header at all, so this only ever blocks browser-style requests.
         """
 
         @self.app.middleware("http")
@@ -300,16 +299,17 @@ class Api:
                     },
                 )
 
+            # Any Origin means a browser page made the request, even one served
+            # from another localhost port; darask-paint never sends one.
             origin = request.headers.get("origin")
             if origin is not None:
-                if urlparse(origin).hostname not in DARASK_PLUGIN_MODE_LOOPBACK_HOSTNAMES:
-                    return JSONResponse(
-                        status_code=403,
-                        content={
-                            "error": "Forbidden",
-                            "detail": f"Origin not allowed in plugin mode: {origin!r}",
-                        },
-                    )
+                return JSONResponse(
+                    status_code=403,
+                    content={
+                        "error": "Forbidden",
+                        "detail": f"Origin not allowed in plugin mode: {origin!r}",
+                    },
+                )
 
             return await call_next(request)
 
