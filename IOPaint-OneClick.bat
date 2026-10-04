@@ -70,13 +70,6 @@ if exist "%USERPROFILE%\.local\bin\uv.exe" set "PATH=%USERPROFILE%\.local\bin;%P
 where uv >nul 2>nul
 if not errorlevel 1 goto :have_uv
 
-REM PyTorch needs the Visual C++ runtime; without it "import torch" fails
-REM with WinError 1114 on a fresh Windows install.
-if not exist "%SystemRoot%\System32\vcruntime140_1.dll" (
-    echo Installing Microsoft Visual C++ Redistributable, required by PyTorch...
-    powershell -NoProfile -Command "Invoke-WebRequest https://aka.ms/vs/17/release/vc_redist.x64.exe -OutFile $env:TEMP\vc_redist.x64.exe"
-    "%TEMP%\vc_redist.x64.exe" /install /passive /norestart
-)
 echo [1/4] Installing uv package manager...
 powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://astral.sh/uv/install.ps1 | iex"
 set "PATH=%USERPROFILE%\.local\bin;%PATH%"
@@ -86,6 +79,7 @@ if errorlevel 1 (
     goto :fail
 )
 :have_uv
+call :ensure_vcredist
 
 echo [2/4] Creating Python environment...
 if not exist "%APPDIR%" mkdir "%APPDIR%"
@@ -132,6 +126,10 @@ echo.
 if not exist "%IOPAINT_MODEL_DIR%" mkdir "%IOPAINT_MODEL_DIR%"
 "%VENV%\Scripts\python.exe" -c "import torch" >nul 2>nul
 if errorlevel 1 (
+    call :ensure_vcredist
+    "%VENV%\Scripts\python.exe" -c "import torch" >nul 2>nul
+)
+if errorlevel 1 (
     echo ERROR: PyTorch failed to load. Install the Microsoft Visual C++ Redistributable
     echo        from https://aka.ms/vs/17/release/vc_redist.x64.exe and run this again.
     pause
@@ -145,6 +143,15 @@ echo Starting IOPaint (model: %IOPAINT_MODEL%, device: !DEVICE!, models in: %IOP
 echo The browser will open automatically. Close this window to stop IOPaint.
 "%IOPAINT_EXE%" start --model "%IOPAINT_MODEL%" --device !DEVICE! --port %IOPAINT_PORT% --model-dir "%IOPAINT_MODEL_DIR%" --inbrowser %IOPAINT_EXTRA_ARGS%
 goto :eof
+
+:ensure_vcredist
+REM PyTorch needs the Visual C++ runtime; without it "import torch" fails
+REM with WinError 1114/126 on a fresh Windows install.
+if exist "%SystemRoot%\System32\vcruntime140_1.dll" exit /b 0
+echo Installing Microsoft Visual C++ Redistributable, required by PyTorch...
+powershell -NoProfile -Command "Invoke-WebRequest https://aka.ms/vs/17/release/vc_redist.x64.exe -OutFile $env:TEMP\vc_redist.x64.exe"
+"%TEMP%\vc_redist.x64.exe" /install /passive /norestart
+exit /b 0
 
 :write_cfg_template
 (
