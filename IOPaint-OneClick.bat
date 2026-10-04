@@ -19,6 +19,8 @@ REM    IOPAINT_MODEL_DIR   model download dir  (default %IOPAINT_HOME%\models)
 REM    IOPAINT_MODEL       model to start with (default lama)
 REM    IOPAINT_PORT        HTTP port           (default 8080)
 REM    IOPAINT_EXTRA_ARGS  extra "iopaint start" arguments
+REM    IOPAINT_WHEEL_URL   install this wheel instead of the latest release
+REM    GITHUB_TOKEN        used for the GitHub release lookup if set
 REM    UV_CACHE_DIR        uv download cache   (default %IOPAINT_HOME%\uv-cache)
 REM    UV_PYTHON_INSTALL_DIR  uv-managed Python (default %IOPAINT_HOME%\python)
 REM ============================================================
@@ -64,8 +66,10 @@ echo uv cache:         %UV_CACHE_DIR%
 echo (edit "%CFG%" to change these)
 echo.
 
+if exist "%USERPROFILE%\.local\bin\uv.exe" set "PATH=%USERPROFILE%\.local\bin;%PATH%"
 where uv >nul 2>nul
 if not errorlevel 1 goto :have_uv
+
 echo [1/4] Installing uv package manager...
 powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://astral.sh/uv/install.ps1 | iex"
 set "PATH=%USERPROFILE%\.local\bin;%PATH%"
@@ -75,10 +79,11 @@ if errorlevel 1 (
     goto :fail
 )
 :have_uv
+call :ensure_vcredist
 
 echo [2/4] Creating Python environment...
 if not exist "%APPDIR%" mkdir "%APPDIR%"
-uv venv "%VENV%" --python 3.12
+uv venv "%VENV%" --python 3.12 --clear
 if errorlevel 1 goto :fail
 
 where nvidia-smi >nul 2>nul
@@ -99,12 +104,17 @@ if errorlevel 1 goto :fail
 
 echo [4/4] Downloading the latest IOPaint release...
 set "WHEEL_URL="
-for /f "usebackq delims=" %%u in (`powershell -NoProfile -Command "$r = Invoke-RestMethod 'https://api.github.com/repos/%REPO%/releases?per_page=5'; $a = $r | ForEach-Object assets | Where-Object name -like '*.whl' | Select-Object -First 1; $a.browser_download_url"`) do set "WHEEL_URL=%%u"
+if defined IOPAINT_WHEEL_URL set "WHEEL_URL=%IOPAINT_WHEEL_URL%"
+if not "!WHEEL_URL!"=="" goto :have_wheel
+for /f "usebackq delims=" %%u in (`powershell -NoProfile -Command "$h = @{}; if ($env:GITHUB_TOKEN) { $h.Authorization = 'Bearer ' + $env:GITHUB_TOKEN }; $r = Invoke-RestMethod -Headers $h 'https://api.github.com/repos/%REPO%/releases?per_page=5'; $a = $r | ForEach-Object assets | Where-Object name -like '*.whl' | Select-Object -First 1; $a.browser_download_url"`) do set "WHEEL_URL=%%u"
 if "!WHEEL_URL!"=="" (
     echo ERROR: could not find a release wheel for %REPO%.
+    echo        The GitHub API allows 60 anonymous requests per hour; retry later,
+    echo        set GITHUB_TOKEN, or set IOPAINT_WHEEL_URL in "%CFG%".
     goto :fail
 )
-echo       %WHEEL_URL%
+:have_wheel
+echo       !WHEEL_URL!
 uv pip install --python "%VENV%" "!WHEEL_URL!"
 if errorlevel 1 goto :fail
 
@@ -114,12 +124,37 @@ echo.
 
 :run
 if not exist "%IOPAINT_MODEL_DIR%" mkdir "%IOPAINT_MODEL_DIR%"
-where nvidia-smi >nul 2>nul
+"%VENV%\Scripts\python.exe" -c "import torch" >nul 2>nul
+if errorlevel 1 (
+    call :ensure_vcredist
+    "%VENV%\Scripts\python.exe" -c "import torch" >nul 2>nul
+)
+if errorlevel 1 (
+    echo ERROR: PyTorch failed to load. Install the Microsoft Visual C++ Redistributable
+    echo        from https://aka.ms/vs/17/release/vc_redist.x64.exe and run this again.
+    pause
+    exit /b 1
+)
+REM Pick the device from the installed PyTorch build, not from nvidia-smi:
+REM a CPU-only torch on a machine with an NVIDIA GPU must still start on CPU.
+"%VENV%\Scripts\python.exe" -c "import sys, torch; sys.exit(0 if torch.cuda.is_available() else 1)" >nul 2>nul
 if errorlevel 1 (set "DEVICE=cpu") else (set "DEVICE=cuda")
 echo Starting IOPaint (model: %IOPAINT_MODEL%, device: !DEVICE!, models in: %IOPAINT_MODEL_DIR%)
 echo The browser will open automatically. Close this window to stop IOPaint.
 "%IOPAINT_EXE%" start --model "%IOPAINT_MODEL%" --device !DEVICE! --port %IOPAINT_PORT% --model-dir "%IOPAINT_MODEL_DIR%" --inbrowser %IOPAINT_EXTRA_ARGS%
 goto :eof
+
+:ensure_vcredist
+REM PyTorch needs the Visual C++ runtime; without it "import torch" fails
+REM with WinError 1114/126 on a fresh Windows install.
+if exist "%SystemRoot%\System32\vcruntime140_1.dll" exit /b 0
+echo Installing Microsoft Visual C++ Redistributable, required by PyTorch...
+powershell -NoProfile -Command "$ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest https://aka.ms/vs/17/release/vc_redist.x64.exe -OutFile $env:TEMP\vc_redist.x64.exe"
+"%TEMP%\vc_redist.x64.exe" /install /passive /norestart
+REM 3010 = installed, reboot required.
+if errorlevel 3010 if not errorlevel 3011 exit /b 0
+if errorlevel 1 echo WARNING: Visual C++ Redistributable install returned !errorlevel!.
+exit /b 0
 
 :write_cfg_template
 (
@@ -130,6 +165,7 @@ goto :eof
     echo #IOPAINT_MODEL=lama
     echo #IOPAINT_PORT=8080
     echo #IOPAINT_EXTRA_ARGS=--low-mem
+    echo #IOPAINT_WHEEL_URL=https://github.com/daraskme/IOpaint/releases/download/TAG/WHEEL.whl
     echo #UV_CACHE_DIR=D:\IOPaint\uv-cache
     echo #UV_PYTHON_INSTALL_DIR=D:\IOPaint\python
 ) > "%CFG%" 2>nul

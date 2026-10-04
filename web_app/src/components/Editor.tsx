@@ -244,7 +244,8 @@ export default function Editor(props: EditorProps) {
     }
 
     const [width, height] = getCurrentWidthHeight()
-    if (width !== imageWidth || height !== imageHeight) {
+    const sizeChanged = width !== imageWidth || height !== imageHeight
+    if (sizeChanged) {
       setImageSize(width, height)
     }
 
@@ -256,7 +257,11 @@ export default function Editor(props: EditorProps) {
       s = Math.min(rW, rH)
     }
     setMinScale(s)
-    setScale(s)
+    // Keep the current zoom after an inpaint render; only reset when the
+    // image is first shown or its size changes (the viewport re-centers then).
+    if (!initialCentered || sizeChanged) {
+      setScale(s)
+    }
 
     console.log(
       `[on file load] image size: ${width}x${height}, scale: ${s}, initialCentered: ${initialCentered}`

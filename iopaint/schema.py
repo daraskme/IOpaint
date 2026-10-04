@@ -439,7 +439,8 @@ class InpaintRequest(BaseModel):
     )
 
     @model_validator(mode="after")
-    def validate_field(cls, values: "InpaintRequest"):
+    def validate_field(self):
+        values = self
         if values.sd_seed == -1:
             values.sd_seed = random.randint(1, 99999999)
             logger.info(f"Generate random seed: {values.sd_seed}")

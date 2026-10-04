@@ -104,6 +104,8 @@ const ImageUploadButton = (props: UploadButtonProps) => {
     if (newFile) {
       onFileUpload(newFile)
     }
+    // Allow selecting the same file again to start over.
+    ev.currentTarget.value = ""
   }
 
   return (
