@@ -10,6 +10,7 @@ import { useKeyPressEvent } from "react-use"
 import { downloadToOutput, runPlugin } from "@/lib/api"
 import { IconButton } from "@/components/ui/button"
 import {
+  errorMessage,
   askWritePermission,
   cn,
   copyCanvasImage,
@@ -400,10 +401,10 @@ export default function Editor(props: EditorProps) {
         updateInteractiveSegState({ tmpInteractiveSegMask: img })
       }
       img.src = blob
-    } catch (e: any) {
+    } catch (e) {
       toast({
         variant: "destructive",
-        description: e.message ? e.message : e.toString(),
+        description: errorMessage(e),
       })
     }
     updateAppState({ isPluginRunning: false })
@@ -543,11 +544,11 @@ export default function Editor(props: EditorProps) {
         toast({
           description: "Save image success",
         })
-      } catch (e: any) {
+      } catch (e) {
         toast({
           variant: "destructive",
           title: "Uh oh! Something went wrong.",
-          description: e.message ? e.message : e.toString(),
+          description: errorMessage(e),
         })
       }
       return
@@ -723,7 +724,7 @@ export default function Editor(props: EditorProps) {
     }
   }
 
-  const renderBrush = (style: any) => {
+  const renderBrush = (style: React.CSSProperties) => {
     return (
       <div
         className="absolute rounded-[50%] border-[1px] border-[solid] border-[#ffcc00] pointer-events-none bg-[#ffcc00bb]"

@@ -1,42 +1,5 @@
 import { useStore } from "@/lib/states"
 import { Button } from "./ui/button"
-import { Dialog, DialogContent, DialogTitle } from "./ui/dialog"
-
-interface InteractiveSegReplaceModal {
-  show: boolean
-  onClose: () => void
-  onCleanClick: () => void
-  onReplaceClick: () => void
-}
-
-const InteractiveSegReplaceModal = (props: InteractiveSegReplaceModal) => {
-  const { show, onClose, onCleanClick, onReplaceClick } = props
-
-  const onOpenChange = (open: boolean) => {
-    if (!open) {
-      onClose()
-    }
-  }
-
-  return (
-    <Dialog open={show} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogTitle>Do you want to remove it or create a new one?</DialogTitle>
-        <div className="flex gap-[12px] w-full justify-end items-center">
-          <Button
-            onClick={() => {
-              onClose()
-              onCleanClick()
-            }}
-          >
-            Remove
-          </Button>
-          <Button onClick={onReplaceClick}>Create new</Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  )
-}
 
 const InteractiveSegConfirmActions = () => {
   const [

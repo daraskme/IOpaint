@@ -192,7 +192,7 @@ export function SettingsDialog() {
             title: `Switch to ${newModel.name} success`,
           })
           setAppModel(model)
-        } catch (error: any) {
+        } catch (error) {
           toast({
             variant: "destructive",
             title: `Switch to ${model.name} failed: ${error}`,
@@ -210,7 +210,7 @@ export function SettingsDialog() {
           if (res.status !== 200) {
             throw new Error(res.statusText)
           }
-        } catch (error: any) {
+        } catch (error) {
           toast({
             variant: "destructive",
             title: `Switch RemoveBG model to ${values.removeBGModel} failed: ${error}`,
@@ -227,7 +227,7 @@ export function SettingsDialog() {
           if (res.status !== 200) {
             throw new Error(res.statusText)
           }
-        } catch (error: any) {
+        } catch (error) {
           toast({
             variant: "destructive",
             title: `Switch RealESRGAN model to ${values.realesrganModel} failed: ${error}`,
@@ -244,7 +244,7 @@ export function SettingsDialog() {
           if (res.status !== 200) {
             throw new Error(res.statusText)
           }
-        } catch (error: any) {
+        } catch (error) {
           toast({
             variant: "destructive",
             title: `Switch ${PluginName.InteractiveSeg} model to ${values.interactiveSegModel} failed: ${error}`,
@@ -327,7 +327,7 @@ export function SettingsDialog() {
 
   function renderModelSettings() {
     let defaultTab = MODEL_TYPE_INPAINT
-    for (let info of modelInfos) {
+    for (const info of modelInfos) {
       if (model.name === info.name) {
         defaultTab = info.model_type
         if (defaultTab === MODEL_TYPE_DIFFUSERS_SDXL) {

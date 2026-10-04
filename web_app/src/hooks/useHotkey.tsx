@@ -1,7 +1,12 @@
 import { useStore } from "@/lib/states"
-import { useHotkeys } from "react-hotkeys-hook"
+import { DependencyList } from "react"
+import { useHotkeys, type HotkeyCallback } from "react-hotkeys-hook"
 
-const useHotKey = (keys: string, callback: any, deps?: any[]) => {
+const useHotKey = (
+  keys: string,
+  callback: HotkeyCallback,
+  deps?: DependencyList
+) => {
   const disableShortCuts = useStore((state) => state.disableShortCuts)
 
   const ref = useHotkeys(keys, callback, { enabled: !disableShortCuts }, deps)

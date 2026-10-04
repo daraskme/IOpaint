@@ -74,6 +74,10 @@ jobs:
         working-directory: web_app
         run: npm ci
 
+      - name: Lint frontend
+        working-directory: web_app
+        run: npx eslint . --ext ts,tsx,js,cjs --report-unused-disable-directives
+
       - name: Build frontend
         working-directory: web_app
         run: npm run build

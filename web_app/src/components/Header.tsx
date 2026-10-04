@@ -11,7 +11,7 @@ import FileManager, { MASK_TAB } from "./FileManager"
 import { getMediaBlob, getMediaFile } from "@/lib/api"
 import { useStore } from "@/lib/states"
 import SettingsDialog from "./Settings"
-import { cn, fileToImage } from "@/lib/utils"
+import { errorMessage, cn, fileToImage } from "@/lib/utils"
 import Coffee from "./Coffee"
 import { useToast } from "./ui/use-toast"
 
@@ -75,10 +75,10 @@ const Header = () => {
         const newFile = await getMediaFile(tab, filename)
         setFile(newFile)
       }
-    } catch (e: any) {
+    } catch (e) {
       toast({
         variant: "destructive",
-        description: e.message ? e.message : e.toString(),
+        description: errorMessage(e),
       })
       return
     }
@@ -116,10 +116,10 @@ const Header = () => {
               let newCustomMask: HTMLImageElement | null = null
               try {
                 newCustomMask = await fileToImage(file)
-              } catch (e: any) {
+              } catch (e) {
                 toast({
                   variant: "destructive",
-                  description: e.message ? e.message : e.toString(),
+                  description: errorMessage(e),
                 })
                 return
               }
@@ -152,10 +152,6 @@ const Header = () => {
                 style={{
                   visibility: customMask ? "visible" : "hidden",
                   outline: "none",
-                }}
-                onClick={() => {
-                  if (customMask) {
-                  }
                 }}
               >
                 <IconButton tooltip="Run custom mask">

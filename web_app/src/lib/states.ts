@@ -28,6 +28,7 @@ import {
   PAINT_BY_EXAMPLE,
 } from "./const"
 import {
+  errorMessage,
   blobToImage,
   canvasToImage,
   dataURItoBlob,
@@ -549,10 +550,10 @@ export const useStore = createWithEqualityFn<AppState & AppAction>()(
             extraMasks: [],
             prevExtraMasks: maskImages,
           })
-        } catch (e: any) {
+        } catch (e) {
           toast({
             variant: "destructive",
-            description: e.message ? e.message : e.toString(),
+            description: errorMessage(e),
           })
         }
 
@@ -606,10 +607,10 @@ export const useStore = createWithEqualityFn<AppState & AppAction>()(
           toast({
             description: `Run ${pluginName} successfully in ${time / 1000}s`,
           })
-        } catch (e: any) {
+        } catch (e) {
           toast({
             variant: "destructive",
-            description: e.message ? e.message : e.toString(),
+            description: errorMessage(e),
           })
         }
         set((state) => {
@@ -933,10 +934,10 @@ export const useStore = createWithEqualityFn<AppState & AppAction>()(
                 state.settings.negativePrompt = res.negative_prompt
               })
             }
-          } catch (e: any) {
+          } catch (e) {
             toast({
               variant: "destructive",
-              description: e.message ? e.message : e.toString(),
+              description: errorMessage(e),
             })
           }
         }

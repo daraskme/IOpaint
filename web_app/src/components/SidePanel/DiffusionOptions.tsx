@@ -122,7 +122,7 @@ const DiffusionOptions = () => {
       return null
     }
 
-    let toolTip =
+    const toolTip =
       "BrushNet is a plug-and-play image inpainting model works on any SD1.5 base models."
 
     return (
@@ -200,7 +200,7 @@ const DiffusionOptions = () => {
       return null
     }
 
-    let toolTip =
+    const toolTip =
       "Using an additional conditioning image to control how an image is generated"
 
     return (
@@ -282,7 +282,7 @@ const DiffusionOptions = () => {
       return null
     }
 
-    let toolTip =
+    const toolTip =
       "Enable quality image generation in typically 2-8 steps. Suggest disabling guidance_scale by setting it to 0. You can also try values between 1.0 and 2.0. When LCM Lora is enabled, LCMSampler will be used automatically."
 
     return (
@@ -427,7 +427,7 @@ const DiffusionOptions = () => {
       return null
     }
 
-    let toolTip =
+    const toolTip =
       "Strength is a measure of how much noise is added to the base image, which influences how similar the output is to the base image. Higher value means more noise and more different from the base image"
     // if (disable) {
     //   toolTip = "BrushNet is enabled, Strength is disabled."
