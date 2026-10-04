@@ -608,7 +608,8 @@ export default function Editor(props: EditorProps) {
     () => {
       decreaseBaseBrushSize()
     },
-    [decreaseBaseBrushSize]
+    [decreaseBaseBrushSize],
+    true
   )
 
   useHotKey(
@@ -616,7 +617,8 @@ export default function Editor(props: EditorProps) {
     () => {
       increaseBaseBrushSize()
     },
-    [increaseBaseBrushSize]
+    [increaseBaseBrushSize],
+    true
   )
 
   // Manual Inpainting Hotkey
